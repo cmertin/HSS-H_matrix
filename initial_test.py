@@ -13,25 +13,27 @@ bins = [int(1000/8)] * 8
 outdata = "initial_test.dat"
 mat = Restructure(data)
 print("Built Matrix")
+min_tol = 0.5
+max_tol = 1.0
+tol_diff = .01
+num_compute = int((max_tol + tol_diff - min_tol)/tol_diff)
 bits_to_mb = 8 * 10e8
 old_size = n * m
 tol_arr = [] # Array of values for the tolerance
 size_arr = [] # Array of values for the reduced matrix size
 rel_err_arr = [] # Array of values for the relative error
-size_save_arr = [] # The amount of elements saved (old size - new) in bits
 stor_arr = [] # Total Storage in MB
 
 index = 1
-for tol in np.arange(.5, 1.01, .01):
-    print("Tolerance = " + str(tol) + " \t(" + str(index) + "/51)")
+for tol in np.arange(min_tol, max_tol + tol_diff, tol_diff):
+    print("Tolerance = " + str(tol) + " \t(" + str(index) + "/" + str(num_compute) + ")")
     A = mat.copy()
     low_rank, sz = RankSVD(A, bins, tol)
     new_size = np.sum(sz)
     size_arr.append(new_size)
     rel_err = FrobDiff(mat, low_rank)
     rel_err_arr.append(rel_err)
-    size_save = ((old_size - new_size) * 64.0)/bits_to_mb
-    size_save_arr.append(size_save)
+    tol_arr.append(tol)
     storage = (new_size * 64.0)/bits_to_mb
     stor_arr.append(storage)
     index = index + 1
@@ -42,11 +44,11 @@ print("Finished Computations")
 fout = open(outdata, 'w')
 
 for i in range(0, len(tol_arr)):
-    str_out = str(tol_arr[i]) + '\t' + str(size_arr[i]) + '\t' + str(size_save_arr[i]) + '\t' + str(rel_err_arr[i]) + '\t' + str(stor_arr[i]) + '\n'
+    str_out = str(tol_arr[i]) + '\t' + str(size_arr[i]) + '\t' + str(rel_err_arr[i]) + '\t' + str(stor_arr[i]) + '\n'
     fout.write(str_out)
 
 fout.close()
-print("Write data to " + outdata)
+print("Wrote data to " + outdata)
 
 # Plot the data
 plt.plot(tol_arr, size_arr)
@@ -68,13 +70,6 @@ plt.xlabel("Number of Matrix Elements")
 plt.ylabel("Relative Error")
 plt.title("Relative Error for Given Number of Matrix Elements")
 plt.savefig("size_err.pdf")
-
-plt.clf()
-plt.plot(rel_err_arr, size_save_arr)
-plt.xlabel("Relative Error")
-plt.ylabel("Savings in Storage (MB)")
-plt.title("Savings in Storage for Given Relative Error (double)")
-plt.savefig("savings_err.pdf")
 
 plt.clf()
 plt.plot(rel_err_arr, stor_arr)
