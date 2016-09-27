@@ -175,6 +175,7 @@ def RankSVD(mat, bins, tol):
     ranks = []
     rank_diff = []
     nnz_mat = []
+    nk2 = [] # Holds the reduced size of the sub matrix, 2nk
     for num in bins:
         bins_3.append(3 * num)
     start_i = 0
@@ -184,9 +185,11 @@ def RankSVD(mat, bins, tol):
     for row in rows:
         for col in cols:
             sub_mat = SubMatrix(mat, row, col, start_i, start_j)
+            n = sub_mat.shape[0]
             U, s, V = np.linalg.svd(sub_mat, full_matrices = False)
             low_rank, rank = LowRankMat(U, s, V, tol)
             #print("\t" + str(FrobDiff(sub_mat, low_rank)))
+            nk2.append(2 * n * rank)
             old_rank = NNZ(s)
             rank_diff.append(old_rank - rank)
             ranks.append(rank)
@@ -194,5 +197,5 @@ def RankSVD(mat, bins, tol):
             start_j = start_j + col
         start_i = start_i + row
         start_j = 0
-    print(rank_diff)
-    return mat, ranks
+    #print(rank_diff)
+    return mat, nk2
