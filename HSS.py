@@ -19,6 +19,8 @@ tol_arr = [] # Array of values for the tolerance
 size_arr = [] # Array of values for the reduced matrix size
 rel_err_arr = [] # Array of values for the relative error
 size_save_arr = [] # The amount of elements saved (old size - new) in bits
+stor_arr = [] # Total Storage in MB
+
 index = 1
 for tol in np.arange(.5, 1.01, .01):
     print("Tolerance = " + str(tol) + " \t(" + str(index) + "/51)")
@@ -30,6 +32,8 @@ for tol in np.arange(.5, 1.01, .01):
     rel_err_arr.append(rel_err)
     size_save = ((old_size - new_size) * 64.0)/bits_to_mb
     size_save_arr.append(size_save)
+    storage = (new_size * 64.0)/bits_to_mb
+    stor_arr.append(storage)
     index = index + 1
 
 print("Finished Computations")
@@ -38,7 +42,7 @@ print("Finished Computations")
 fout = open(outdata, 'w')
 
 for i in range(0, len(tol_arr)):
-    str_out = str(tol_arr[i]) + '\t' + str(size_arr[i]) + '\t' + str(size_save_arr[i]) + '\t' + str(rel_err_arr[i]) + '\n'
+    str_out = str(tol_arr[i]) + '\t' + str(size_arr[i]) + '\t' + str(size_save_arr[i]) + '\t' + str(rel_err_arr[i]) + '\t' + str(stor_arr[i]) + '\n'
     fout.write(str_out)
 
 fout.close()
@@ -71,5 +75,12 @@ plt.xlabel("Relative Error")
 plt.ylabel("Savings in Storage (MB)")
 plt.title("Savings in Storage for Given Relative Error (double)")
 plt.savefig("savings_err.pdf")
+
+plt.clf()
+plt.plot(rel_err_arr, stor_arr)
+plt.xlabel("Relative Error")
+plt.ylabel("Matrix Storage (MB)")
+plt.title("Storage Costs of Matrix (double)")
+plt.savefig("storage_err.pdf")
 
 print("Finished plots")
