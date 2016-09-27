@@ -13,6 +13,7 @@ bins = [int(1000/8)] * 8
 outdata = "initial_test.dat"
 mat = Restructure(data)
 print("Built Matrix")
+bits_to_mb = 8 * 10e8
 old_size = n * m
 tol_arr = [] # Array of values for the tolerance
 size_arr = [] # Array of values for the reduced matrix size
@@ -27,7 +28,7 @@ for tol in np.arange(.5, 1.01, .01):
     size_arr.append(new_size)
     rel_err = FrobDiff(mat, low_rank)
     rel_err_arr.append(rel_err)
-    size_save = (old_size - new_size) * 64.0
+    size_save = ((old_size - new_size) * 64.0)/bits_to_mb
     size_save_arr.append(size_save)
     index = index + 1
 
