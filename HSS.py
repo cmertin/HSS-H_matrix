@@ -68,7 +68,7 @@ plt.savefig("size_err.pdf")
 plt.clf()
 plt.plot(rel_err_arr, size_save_arr)
 plt.xlabel("Relative Error")
-plt.ylabel("Savings in Storage (bits)")
+plt.ylabel("Savings in Storage (MB)")
 plt.title("Savings in Storage for Given Relative Error (double)")
 plt.savefig("savings_err.pdf")
 
