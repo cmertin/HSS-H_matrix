@@ -3,9 +3,9 @@ from mat import *
 def MatrixSplit(mat):
     n = mat.shape[0]
     m = mat.shape[1]
-    n2_a = int(floor(n/2)) + (n % 2)
+    n2_a = int(floor(n/2))# + (n % 2)
     n2_b = int(floor(n/2))
-    m2_a = int(floor(m/2)) + (m % 2)
+    m2_a = int(floor(m/2))# + (m % 2)
     m2_b = int(floor(m/2))
     mat_a1 = [min(n2_a, m2_a), n2_a, m2_a, 0, 0]
     mat_a2 = [min(n2_b, m2_a), n2_a, m2_b, 0, m2_a]
@@ -15,7 +15,7 @@ def MatrixSplit(mat):
     return ranks
 
 def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
-    max_rank = floor(old_rank/4)
+    max_rank = 20#floor(old_rank/6)
     for split in splits:
         n = split[1]
         m = split[2]
@@ -25,7 +25,6 @@ def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
         U, s, V = np.linalg.svd(sub_matrix, full_matrices = False)
         #print(Rank(s), old_rank)
         if Rank(s) <= min_rank:
-            print("continue")
             continue
 
         low_rank, new_rank = LowRankMat(U, s, V, tol)
@@ -38,11 +37,10 @@ def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
             LowRank_Recurse(sub_matrix, old_rank, sub_splits, ranks, tol, min_rank)
             low_rank = sub_matrix
 
-        UpdateMat(mat, low_rank, start_i, start_j)
-    print(mat)
-    print(ranks)
+        mat = UpdateMat(mat, low_rank, start_i, start_j)
+    return mat, ranks
 
-'''
+''''''
 curve = "H"
 level = "5"
 n = 3000
@@ -57,18 +55,11 @@ outdata = "initial_test.dat"
 mat = Restructure(data)
 print("Built Matrix")
 
+min_rank = 3
 tol = 0.95
+D = mat.copy()
+#D = np.random.rand(100,100)#np.zeros((100, 100), dtype=np.float64)
 
-LowRank_Recurse(mat)
-'''
-
-D = np.random.rand(100,100)#np.zeros((100, 100), dtype=np.float64)
-
-'''
-for i in range(0,D.shape[0]):
-    for j in range(D.shape[1]):
-        D[i][j] = i * D.shape[1] + j
-'''
 print(D)
 print('\n\n')
 print(D.shape)
@@ -80,4 +71,17 @@ ranks = []
 
 U, s, V = np.linalg.svd(D, full_matrices = True)
 
-LowRank_Recurse(D, Rank(s), splits, ranks, 0.99, 3)
+low_rank, ranks = LowRank_Recurse(D, Rank(s), splits, ranks, tol, min_rank)
+
+print("\n\n")
+print(low_rank)
+print("\n\n")
+
+num_elements = 0
+for rank in ranks:
+    num_elements = num_elements + 2 * rank[0] * rank[1]
+
+print(num_elements)
+
+rel_err = FrobDiff(mat, low_rank)
+print(rel_err)
