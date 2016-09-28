@@ -38,7 +38,7 @@ def Restructure(array):
     return mat
 
 # Defining zeros as True will return the number of zeros instead
-def NNZ(mat, zeros=False):
+def NNZ(mat):
     count = np.count_nonzero(mat)
     return count
 
@@ -53,12 +53,8 @@ def SubMatrix(mat, m, n, start_i, start_j):
             new_mat[i][j] = mat[start_i + i][start_j + j]
     return new_mat
 
-def Rank(U, s, V, tol):
-    count = 0
-    for eig in s:
-        #print(eig)
-        if eig > tol:
-            count = count + 1
+def Rank(s):
+    count = np.count_nonzero(s)
     return count
 
 def FrobDiff(A, Ap):
@@ -71,60 +67,6 @@ def SVDTest(A, tol):
     low_rank, rank = LowRankMat(U, s, V, tol)
     print("\t Rank After: " + str(rank))
     print("SVD Test: " + str(FrobDiff(A_cpy, low_rank)))
-
-
-def LowRankTest(mat):
-    mat_cpy = mat.copy()
-    print("Calculating SVD")
-    U, s, V = np.linalg.svd(mat_cpy, full_matrices = True)
-    print("DONE")
-    min_rank = 2900
-    rel_err = []
-    eigs = s.copy()
-    U_mat = U.copy()
-    V_mat = V.copy()
-    size = len(s)
-    diff_rank = 0
-    diff = []
-    s[-1] = 0
-    s[-2] = 0
-    S = np.diag(s)
-    low_mat = np.dot(U_mat, np.dot(S, V_mat))
-    print("Rel Err: " + str(FrobDiff(mat_cpy, low_mat)))
-    '''
-    while size > min_rank:
-        count = 0
-        step_rmv = 5
-        diff_rank = diff_rank + step_rmv
-        diff.append(diff_rank)
-        while(count < step_rmv):
-            s = np.delete(s, [len(s)-1])
-            count = count + 1
-        #s = np.delete(s, [len(s)-1])
-        size = len(s)
-        print("Size = " + str(size))
-        S = np.diag(s)
-        dim_new = S.shape[0]
-        U_mat.resize((U.shape[0], dim_new))
-        V_mat.resize((dim_new, V.shape[1]))
-        low_mat = np.dot(U_mat, np.dot(S, V_mat))
-        rel_err.append(FrobDiff(mat_cpy, low_mat))
-    plt.plot(diff, rel_err)
-    plt.xlabel("Original Rank - New Rank")
-    plt.ylabel("Relative Error")
-    plt.savefig("RankDifft.pdf")
-
-    plt.clf()
-    eig_index = []
-    for i in range(1, len(eigs)+1):
-        eig_index.append(i)
-    plt.plot(eig_index, eigs)
-    plt.xlabel("Eigen Index")
-    plt.ylabel("Eigenvalue")
-    plt.savefig("Eigenvaluest.pdf")
-    print("DONE")
-    '''
-    #return rel_err, eigs
 
 def ZeroDiagonals(mat):
     M = mat.copy()
