@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 import matplotlib.pyplot as plt
 import numpy as np
-from math import sqrt
+from math import sqrt, floor
 import struct
 
 def ReadFile(filename):
@@ -186,14 +186,18 @@ def RankSVD(mat, bins, tol):
         for col in cols:
             sub_mat = SubMatrix(mat, row, col, start_i, start_j)
             n = sub_mat.shape[0]
+            m = sub_mat.shape[1]
             U, s, V = np.linalg.svd(sub_mat, full_matrices = False)
             low_rank, rank = LowRankMat(U, s, V, tol)
             #print("\t" + str(FrobDiff(sub_mat, low_rank)))
-            nk2.append(2 * n * rank)
             old_rank = NNZ(s)
+            if rank < floor(old_rank / 2):
+                nk2.append(2 * n * rank)
+                mat = UpdateMat(mat, low_rank, start_i, start_j)
+            else:
+                nk2.append(n * m)
             rank_diff.append(old_rank - rank)
             ranks.append(rank)
-            mat = UpdateMat(mat, low_rank, start_i, start_j)
             start_j = start_j + col
         start_i = start_i + row
         start_j = 0

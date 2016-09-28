@@ -1,4 +1,5 @@
 from mat import *
+import winsound
 
 curve = "H"
 level = "5"
@@ -15,7 +16,7 @@ mat = Restructure(data)
 print("Built Matrix")
 min_tol = 0.5
 max_tol = 1.0
-tol_diff = .01
+tol_diff = .001
 num_compute = int((max_tol + tol_diff - min_tol)/tol_diff)
 bits_to_mb = 8 * 10e8
 old_size = n * m
@@ -55,27 +56,30 @@ plt.plot(tol_arr, size_arr)
 plt.xlabel("Tolerance")
 plt.ylabel("Number of Matrix Elements")
 plt.title("Matrix Size for a Given Tolerance")
-plt.savefig("tol_size.pdf")
+plt.ticklabel_format(style="sci", axis='y', scilimits=(6,6))
+plt.savefig("tol_size.pdf", format="pdf", bbox_inches="tight")
 
 plt.clf()
 plt.plot(tol_arr, rel_err_arr)
 plt.xlabel("Tolerance")
 plt.ylabel("Relative Error")
 plt.title("Relative Error for a Given Tolerance")
-plt.savefig("tol_error.pdf")
+plt.savefig("tol_error.pdf", format="pdf", bbox_inches="tight")
 
 plt.clf()
 plt.plot(size_arr, rel_err_arr)
 plt.xlabel("Number of Matrix Elements")
 plt.ylabel("Relative Error")
 plt.title("Relative Error for Given Number of Matrix Elements")
-plt.savefig("size_err.pdf")
+plt.ticklabel_format(style="sci", axis='x', scilimits=(6,6))
+plt.savefig("size_err.pdf", format="pdf", bbox_inches="tight")
 
 plt.clf()
 plt.plot(rel_err_arr, stor_arr)
 plt.xlabel("Relative Error")
 plt.ylabel("Matrix Storage (MB)")
 plt.title("Storage Costs of Matrix (double)")
-plt.savefig("storage_err.pdf")
+plt.savefig("storage_err.pdf", format="pdf", bbox_inches="tight")
 
 print("Finished plots")
+winsound.Beep(300,2000)
