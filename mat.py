@@ -48,7 +48,7 @@ def NNZ(mat):
 # n is the number of resulting columns
 def SubMatrix(mat, m, n, start_i, start_j):
     new_mat = np.zeros((m,n))
-    print(mat.shape, m, n, start_i, start_j)
+    #print(mat.shape, m, n, start_i, start_j)
     for i in range(0, m):
         for j in range(0, n):
             new_mat[i][j] = mat[start_i + i][start_j + j]

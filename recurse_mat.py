@@ -1,4 +1,5 @@
 from mat import *
+import scipy as sc
 
 def MatrixSplit(mat):
     n = mat.shape[0]
@@ -28,7 +29,7 @@ def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
             continue
 
         low_rank, new_rank = LowRankMat(U, s, V, tol)
-        print(new_rank, old_rank)
+        #print(new_rank, old_rank)
         if new_rank <= max_rank:
             sub_data = [new_rank, n, m, start_i, start_j]
             ranks.append(sub_data)
@@ -43,45 +44,88 @@ def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
 ''''''
 curve = "H"
 level = "5"
-n = 3000
-m = 3000
+n = 2000
+m = 2000
+'''
 mat_file = "mob_" + curve + ".bin"
 bin_file = "level_" + level + "_" + curve + ".dat"
 print("Matrix File: " + mat_file)
 data = ReadBinary(mat_file, n * m)
 x = np.random.rand(m)
-bins = [int(1000/8)] * 8
 outdata = "initial_test.dat"
 mat = Restructure(data)
-print("Built Matrix")
+'''
 
 min_rank = 3
-tol = 0.95
-D = mat.copy()
-#D = np.random.rand(100,100)#np.zeros((100, 100), dtype=np.float64)
+min_tol = 0.80
+tol_diff = 0.001
+max_tol = 1.0 + tol_diff
 
-print(D)
-print('\n\n')
-print(D.shape)
-print('\n\n')
 
-splits = MatrixSplit(D)
+nm = [3000, 4000, 6000, 10000, 20000]
+for n in nm:
+    m = n
+    outdata = str(n) + "_" + str(m) + "_data.dat"
+    mat = np.random.rand(n,m)
+    print("Built Matrix")
+    U, s, V = np.linalg.svd(mat, full_matrices = True)
+    print("Rank = " + str(Rank(s)))
+    tol_arr = []
+    rel_err_arr = []
+    num_elements_arr = []
 
-ranks = []
+    for tol in np.arange(min_tol, max_tol + tol_diff, tol_diff):
+        print("Tolerance = " + str(tol))
+        D = mat.copy()
+        splits = MatrixSplit(D)
+        ranks = []
+        U, s, V = np.linalg.svd(D, full_matrices = True)
+        low_rank, ranks = LowRank_Recurse(D, Rank(s), splits, ranks, tol, min_rank)
 
-U, s, V = np.linalg.svd(D, full_matrices = True)
+        num_elements = 0
+        nm_ = 0
+        for rank in ranks:
+            num_elements = num_elements + 2 * rank[0] * rank[1]
+            nm_ = nm_ + rank[1] * rank[2]
 
-low_rank, ranks = LowRank_Recurse(D, Rank(s), splits, ranks, tol, min_rank)
+        nm_diff = n*m - nm_
+        num_elements = num_elements + nm_diff
 
-print("\n\n")
-print(low_rank)
-print("\n\n")
+        rel_err = FrobDiff(mat, low_rank)
 
-num_elements = 0
-for rank in ranks:
-    num_elements = num_elements + 2 * rank[0] * rank[1]
+        tol_arr.append(tol)
+        rel_err_arr.append(rel_err)
+        num_elements_arr.append(num_elements)
+        print('\t' + str(rel_err))
 
-print(num_elements)
+    fout = open(outdata, 'w')
 
-rel_err = FrobDiff(mat, low_rank)
-print(rel_err)
+    for i in range(0, len(tol_arr)):
+        str_out = str(tol_arr[i]) + '\t' + str(rel_err_arr[i]) + '\t' + str(num_elements_arr[i]) + '\n'
+        fout.write(str_out)
+
+    fout.close()
+    print("Wrote data to " + outdata)
+
+    plot_title_tol = "Tolerance vs Number of Elements [" + str(n) + " x " + str(m) + "]"
+    plot_title_err = "Relative Error vs Number of Elements [" + str(n) + " x " + str(m) + "]"
+    file_tol = str(n) + "_" + str(m) + "_tol_elements.pdf"
+    file_err = str(n) + "_" + str(m) + "_rel-err_elements.pdf"
+
+    plt.clf()
+    plt.plot(tol_arr, num_elements_arr)
+    plt.xlabel("Tolerance")
+    plt.ylabel("Number of Matrix Elements")
+    plt.title(plot_title_tol)
+    #plt.ticklabel_format(style="sci", axis='y', scilimits=(6,6))
+    plt.savefig(file_tol, format="pdf", bbox_inches="tight")
+
+    plt.clf()
+    plt.plot(rel_err_arr, num_elements_arr)
+    plt.xlabel("Relative Error")
+    plt.ylabel("Number of Matrix Elements")
+    plt.title(plot_title_err)
+    plt.savefig(file_err, format="pdf", bbox_inches="tight")
+
+    print("Finished Plotting")
+print("DONE")
