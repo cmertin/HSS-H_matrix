@@ -15,8 +15,8 @@ def MatrixSplit(mat):
     ranks = [mat_a1, mat_a2, mat_b1, mat_b2]
     return ranks
 
-def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
-    max_rank = 20#floor(old_rank/6)
+def LowRank_Recurse(mat, max_rank, splits, ranks, tol, min_rank, level):
+    level = level + 1
     for split in splits:
         n = split[1]
         m = split[2]
@@ -25,48 +25,50 @@ def LowRank_Recurse(mat, old_rank, splits, ranks, tol, min_rank):
         sub_matrix = SubMatrix(mat, m, n, start_i, start_j)
         U, s, V = np.linalg.svd(sub_matrix, full_matrices = False)
         #print(Rank(s), old_rank)
-        if Rank(s) <= min_rank:
+        local_rank = Rank(s)
+        if local_rank <= min_rank:
             continue
 
         low_rank, new_rank = LowRankMat(U, s, V, tol)
         #print(new_rank, old_rank)
-        if new_rank <= max_rank:
+        if new_rank <= (max_rank/(2**level)):
             sub_data = [new_rank, n, m, start_i, start_j]
             ranks.append(sub_data)
         else:
+            old_level = level
+            local_rank = new_rank
             sub_splits = MatrixSplit(sub_matrix)
-            LowRank_Recurse(sub_matrix, old_rank, sub_splits, ranks, tol, min_rank)
+            LowRank_Recurse(sub_matrix, local_rank, sub_splits, ranks, tol, min_rank, level)
+            level = old_level
             low_rank = sub_matrix
 
         mat = UpdateMat(mat, low_rank, start_i, start_j)
     return mat, ranks
 
-''''''
 curve = "H"
 level = "5"
-n = 2000
-m = 2000
-'''
+
 mat_file = "mob_" + curve + ".bin"
 bin_file = "level_" + level + "_" + curve + ".dat"
 print("Matrix File: " + mat_file)
+n = 3000
+m = 3000
 data = ReadBinary(mat_file, n * m)
 x = np.random.rand(m)
 outdata = "initial_test.dat"
 mat = Restructure(data)
-'''
 
 min_rank = 3
-min_tol = 0.80
-tol_diff = 0.001
+min_tol = 0.8
+tol_diff = 0.01
 max_tol = 1.0 + tol_diff
 
 
-nm = [3000, 4000, 6000, 10000, 20000]
+nm = [1000]#[1000, 2000, 3000, 4000, 6000, 10000, 20000]
 for n in nm:
     m = n
     outdata = str(n) + "_" + str(m) + "_data.dat"
-    mat = np.random.rand(n,m)
+    #mat = np.random.rand(n,m)
     print("Built Matrix")
     U, s, V = np.linalg.svd(mat, full_matrices = True)
     print("Rank = " + str(Rank(s)))
@@ -74,13 +76,13 @@ for n in nm:
     rel_err_arr = []
     num_elements_arr = []
 
-    for tol in np.arange(min_tol, max_tol + tol_diff, tol_diff):
+    for tol in np.arange(min_tol, max_tol, tol_diff):
         print("Tolerance = " + str(tol))
         D = mat.copy()
         splits = MatrixSplit(D)
         ranks = []
         U, s, V = np.linalg.svd(D, full_matrices = True)
-        low_rank, ranks = LowRank_Recurse(D, Rank(s), splits, ranks, tol, min_rank)
+        low_rank, ranks = LowRank_Recurse(D, Rank(s), splits, ranks, tol, min_rank, 1)
 
         num_elements = 0
         nm_ = 0
@@ -88,8 +90,9 @@ for n in nm:
             num_elements = num_elements + 2 * rank[0] * rank[1]
             nm_ = nm_ + rank[1] * rank[2]
 
-        nm_diff = n*m - nm_
+        nm_diff = 3000*3000 - nm_
         num_elements = num_elements + nm_diff
+        print(num_elements)
 
         rel_err = FrobDiff(mat, low_rank)
 
