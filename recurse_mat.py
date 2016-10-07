@@ -91,6 +91,7 @@ for n in nm:
             nm_ = nm_ + rank[1] * rank[2]
 
         nm_diff = 3000*3000 - nm_
+        print("Diff: " + str(nm_diff))
         num_elements = num_elements + nm_diff
         print(num_elements)
 
