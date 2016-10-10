@@ -1,6 +1,6 @@
 import numpy as np
 
-class LowRankMat:
+class LowRankMatrix:
     def __init__(self, start_i, start_j, n, k, d, Y, Z):
         self.start_i = start_i
         self.start_j = start_j
@@ -41,5 +41,5 @@ def CompressMatrix(A, k, start_i = 0, start_j = 0):
             Vk[i,j] = V[i,j]
 
     Yk = np.dot(Uk, Sk)
-    low_rank = LowRankMat(start_i, start_j, n, k, m, Yk, Vk)
+    low_rank = LowRankMatrix(start_i, start_j, n, k, m, Yk, Vk)
     return low_rank
