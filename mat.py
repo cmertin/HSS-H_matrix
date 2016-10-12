@@ -30,9 +30,9 @@ def Restructure(array):
     row = 0
     col = 0
     for i in range(0, len(array)):
-        mat[row][col] = array[i]
+        mat[row][col] = np.float64(array[i])
         col = col + 1
-        if col == 3000:
+        if col == n:
             col = 0
             row = row + 1
     return mat

@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg.interpolative as sli
 
 class LowRankMatrix:
     def __init__(self, start_i, start_j, n, k, d, Y, Z):
@@ -41,5 +42,28 @@ def CompressMatrix(A, k, start_i = 0, start_j = 0):
             Vk[i,j] = V[i,j]
 
     Yk = np.dot(Uk, Sk)
+    low_rank = LowRankMatrix(start_i, start_j, n, k, m, Yk, Vk)
+    return low_rank
+
+def CompressMatrixID(U, s, V, start_i = 0, start_j = 0):
+    Yk = np.dot(U, np.diag(s))
+    Vk = V.conj().T
+
+    n = U.shape[0]
+    m = V.shape[0]
+    k = s.shape[0]
+
+    low_rank = LowRankMatrix(start_i, start_j, n, k, m, Yk, Vk)
+    return low_rank, k
+
+def CompressMatrixID_2(A, k, start_i = 0, start_j = 0):
+    Uk, sk, Vk = sli.svd(A, k)
+    Yk = np.dot(Uk, np.diag(sk))
+
+    Vk = Vk.conj().T
+
+    n = A.shape[0]
+    m = A.shape[1]
+
     low_rank = LowRankMatrix(start_i, start_j, n, k, m, Yk, Vk)
     return low_rank

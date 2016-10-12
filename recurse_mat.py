@@ -1,5 +1,6 @@
 from mat import *
 from compress_mat import *
+import scipy.linalg.interpolative as sli
 
 def MatrixSplit(mat):
     n = mat.shape[0]
@@ -60,13 +61,12 @@ x = np.random.rand(m)
 outdata = "initial_test.dat"
 mat = Restructure(data)
 
-min_rank = 500
+min_rank = 16#500
 min_tol = 0.8
 tol_diff = 0.01
 max_tol = 1.0 + tol_diff
 
 Hmat = HMat(3000, 3000)
-
 
 nm = [1000]#[1000, 2000, 3000, 4000, 6000, 10000, 20000]
 for n in nm:
@@ -81,7 +81,7 @@ for n in nm:
     num_elements_arr = []
 
     #for tol in np.arange(min_tol, max_tol, tol_diff):
-    tol = .98
+    tol = .95
     print("Tolerance = " + str(tol))
     D = mat.copy()
     splits = MatrixSplit(D)
@@ -100,6 +100,8 @@ for n in nm:
         num_elements = num_elements + n1 * m1
         num_k = num_k + 2 * n1 * k1
     print(num_elements, num_k)
+
+    print("Sub Matrices: " + str(len(sub_matrices)))
 
     r1 = np.dot(mat, x)
     r2 = Hmat.MatVec(x)
