@@ -36,8 +36,8 @@ def LowRank_Recurse(mat, Hmat, max_rank, splits, tol, min_rank, level = 1):
             Hmat.add_lowrank(sub_matrix, local_rank, start_i, start_j)
             continue
 
-        if new_rank < (max_rank/(2**level)):
-            Hmat.add_lowrank(low_rank, new_rank, start_i, start_j)
+        if new_rank < min(n/2, m/2):#(max_rank/(2**level)):
+            Hmat.add_lowrank(sub_matrix, new_rank, start_i, start_j)
         else:
             old_level = level
             local_rank = new_rank
@@ -48,7 +48,7 @@ def LowRank_Recurse(mat, Hmat, max_rank, splits, tol, min_rank, level = 1):
 
     return Hmat
 
-curve = "H"
+curve = "H-1000"
 level = "5"
 
 mat_file = "mob_" + curve + ".bin"
@@ -64,7 +64,7 @@ vec_file = "vec.dat"
 result_file = "result.dat"
 mat = Restructure(data)
 
-min_rank = 16#500
+min_rank = 16#500#16
 min_tol = 0.8
 tol_diff = 0.01
 max_tol = 1.0 + tol_diff
@@ -84,7 +84,7 @@ for n in nm:
     num_elements_arr = []
 
     #for tol in np.arange(min_tol, max_tol, tol_diff):
-    tol = .95
+    tol = .98
     print("Tolerance = " + str(tol))
     D = mat.copy()
     splits = MatrixSplit(D)

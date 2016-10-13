@@ -139,12 +139,12 @@ void MatVec(vector<SubMatrix> &HMat, vector<double> &vec, vector<double> &result
       for(int i = 0; i < n; ++i)
 	     {
 	        unsigned int x_index = start_i + i;
-	        for(int k_ = 0; k_ < k; ++k_)
+	        for(int j = 0; j < m; ++j)
 	         {
-	            for(int j = 0; j < m; ++j)
+	            for(int k_ = 0; k_ < k; ++k_)
 		            {
 		              unsigned int y_index = i * k + k_;
-		              unsigned int z_index = k_ * m + j;
+		              unsigned int z_index = j * k + k_;
 		              result[x_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
 		            }
 	        }

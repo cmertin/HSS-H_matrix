@@ -10,6 +10,7 @@ class HMat:
 
     def add_lowrank(self, mat, k, start_i = 0, start_j = 0):
         low_rank = CompressMatrixID_2(mat, k, start_i, start_j)
+        #low_rank = CompressMatrix(mat, k, start_i, start_j)
         self.subMat.append(low_rank)
 
     def MatVec(self, x, hmat_file, vec_file, result_file):
