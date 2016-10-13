@@ -77,45 +77,35 @@ void ReadHMat(string &filename, vector<SubMatrix> &HMat)
   for(int submat = 0; submat < num_submat; ++submat)
     {
       SubMatrix A;
-      getline(file, line);
       size_t pos = 0;
       string substr;
       // Reads in the info for the sub matrix
       // start_i, n, k, m
-      cout << line << endl;
-      while((pos = line.find(",")) != string::npos)
-	     {
-	      substr = line.substr(0, pos);
-        cout << '\t' << substr << endl;
-	      A.info.push_back(stoi(substr));
-	      line.erase(0, pos + 1);
-	     }
+      for(int i = 0; i < 4; ++i)
+	{
+	  getline(file, line);
+	  A.info.push_back(stoi(line));
+	}
       // Reads in Yk
       for(int y = 0; y < A.info[1]; ++y)
 	     {
-	      getline(file, line);
-	      pos = 0;
-	      while((pos = line.find(",")) != string::npos)
-	       {
-	        substr = line.substr(0, pos);
-	        double val = stod(substr);
-	        A.Y.push_back(val);
-	        line.erase(0, pos + 1);
-	       }
+	       for(int k = 0; k < A.info[2]; ++k)
+		 {
+		   getline(file, line);
+		   double val = stod(line);
+		   A.Y.push_back(val);
+		 }
 	      }
       // Reads in Zk
       for(int z = 0; z < A.info[3]; ++z)
 	     {
-	      getline(file, line);
-	      pos = 0;
-	      while((pos = line.find(",")) != string::npos)
-	       {
-	        substr = line.substr(0, pos);
-	        double val = stod(substr);
-	        A.Z.push_back(val);
-	        line.erase(0, pos + 1);
-	       }
-	    }
+	       for(int k = 0; k < A.info[2]; ++k)
+		 {
+		   getline(file, line);
+		   double val = stod(line);
+		   A.Z.push_back(val);
+		 }
+	     }
       HMat.push_back(A);
     }
   file.close();
@@ -127,6 +117,7 @@ void ReadVec(string &filename, vector<double> &vec)
   ifstream file;
   file.open(filename.c_str());
   string line;
+  getline(file, line);
   while(getline(file, line))
     {
       double val = stod(line);
@@ -145,15 +136,14 @@ void MatVec(vector<SubMatrix> &HMat, vector<double> &vec, vector<double> &result
       unsigned int n = HMat[submat].info[1];
       unsigned int k = HMat[submat].info[2];
       unsigned int m = HMat[submat].info[3];
-      cout << n << '\t' << m << '\t' << k << '\t' << submat << endl;
       for(int i = 0; i < n; ++i)
 	     {
 	        unsigned int x_index = start_i + i;
-	        for(int j = 0; j < m; ++j)
+	        for(int k_ = 0; k_ < k; ++k_)
 	         {
-	            for(int k_ = 0; k_ < k; ++k_)
+	            for(int j = 0; j < m; ++j)
 		            {
-		              unsigned int y_index = i * n + k_;
+		              unsigned int y_index = i * k + k_;
 		              unsigned int z_index = k_ * m + j;
 		              result[x_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
 		            }

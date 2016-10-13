@@ -19,6 +19,10 @@ class HMat:
         print("Wrote to " + vec_file)
         cmd = "./matvec " + hmat_file + " " + vec_file + " " + result_file
         os.system(cmd)
+        # Read in the result
+        lines = [np.float64(line.rstrip('\n')) for line in open(result_file)]
+        result = np.asarray(lines)
+        return result
         '''
         result = np.zeros(x.shape[0], dtype=np.float64)
         for low_rank in self.subMat:
@@ -45,23 +49,18 @@ def Output_Hmat(Hmat, filename):
         k = sub_mat.k
         m = sub_mat.d
         start_i = sub_mat.start_i
-        line = str(start_i) + "," + str(n) + "," + str(k) + "," + str(m) + "\n"
+        line = str(start_i) + "\n" + str(n) + "\n" + str(k) + "\n" + str(m) + "\n"
         output.write(line)
+        #print(sub_mat.Y.shape, sub_mat.Z.shape)
         for i in range(0, n):
             line = ""
             for j in range(0, k):
-                if j != k-1:
-                    line = line + str(sub_mat.Y[i][j]) + ","
-                else:
-                    line = line + str(sub_mat.Y[i][j]) + "\n"
+                line = line + str(sub_mat.Y[i][j]) + "\n"
             output.write(line)
         for i in range(0, k):
             line = ""
             for j in range(0, m):
-                if j != m-1:
-                    line = line + str(sub_mat.Z[i][j]) + ","
-                else:
-                    line = line + str(sub_mat.Z[i][j]) + "\n"
+                line = line + str(sub_mat.Z[i][j]) + "\n"
             output.write(line)
     output.close()
 
