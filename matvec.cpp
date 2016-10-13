@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   cout << '\t' << "Finished MatVec " << endl;
   OutputFile(out_file, result);
   cout << '\t' << "Wrote result to " << out_file << endl;
-  
+
   return 0;
 }
 
@@ -82,38 +82,40 @@ void ReadHMat(string &filename, vector<SubMatrix> &HMat)
       string substr;
       // Reads in the info for the sub matrix
       // start_i, n, k, m
+      cout << line << endl;
       while((pos = line.find(",")) != string::npos)
-	{
-	  substr = line.substr(0, pos);
-	  A.info.push_back(stoi(substr));
-	  line.erase(0, pos + 1);
-	}
+	     {
+	      substr = line.substr(0, pos);
+        cout << '\t' << substr << endl;
+	      A.info.push_back(stoi(substr));
+	      line.erase(0, pos + 1);
+	     }
       // Reads in Yk
       for(int y = 0; y < A.info[1]; ++y)
-	{
-	  getline(file, line);
-	  pos = 0;
-	  while((pos = line.find(",")) != string::npos)
-	    {
-	      substr = line.substr(0, pos);
-	      double val = stod(substr);
-	      A.Y.push_back(val);
-	      line.erase(0, pos + 1);
-	    }
-	}
+	     {
+	      getline(file, line);
+	      pos = 0;
+	      while((pos = line.find(",")) != string::npos)
+	       {
+	        substr = line.substr(0, pos);
+	        double val = stod(substr);
+	        A.Y.push_back(val);
+	        line.erase(0, pos + 1);
+	       }
+	      }
       // Reads in Zk
       for(int z = 0; z < A.info[3]; ++z)
-	{
-	  getline(file, line);
-	  pos = 0;
-	  while((pos = line.find(",")) != string::npos)
-	    {
-	      substr = line.substr(0, pos);
-	      double val = stod(substr);
-	      A.Z.push_back(val);
-	      line.erase(0, pos + 1);
+	     {
+	      getline(file, line);
+	      pos = 0;
+	      while((pos = line.find(",")) != string::npos)
+	       {
+	        substr = line.substr(0, pos);
+	        double val = stod(substr);
+	        A.Z.push_back(val);
+	        line.erase(0, pos + 1);
+	       }
 	    }
-	}
       HMat.push_back(A);
     }
   file.close();
@@ -143,19 +145,20 @@ void MatVec(vector<SubMatrix> &HMat, vector<double> &vec, vector<double> &result
       unsigned int n = HMat[submat].info[1];
       unsigned int k = HMat[submat].info[2];
       unsigned int m = HMat[submat].info[3];
+      cout << n << '\t' << m << '\t' << k << '\t' << submat << endl;
       for(int i = 0; i < n; ++i)
-	{
-	  unsigned int x_index = start_i + i;
-	  for(int j = 0; j < m; ++j)
-	    {
-	      for(int k_ = 0; k_ < k; ++k_)
-		{
-		  unsigned int y_index = i * n + k_;
-		  unsigned int z_index = k_ * m + j;
-		  result[x_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
-		}
+	     {
+	        unsigned int x_index = start_i + i;
+	        for(int j = 0; j < m; ++j)
+	         {
+	            for(int k_ = 0; k_ < k; ++k_)
+		            {
+		              unsigned int y_index = i * n + k_;
+		              unsigned int z_index = k_ * m + j;
+		              result[x_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
+		            }
+	        }
 	    }
-	}
     }
   return;
 }

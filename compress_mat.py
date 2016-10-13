@@ -1,5 +1,6 @@
 import numpy as np
 from lowrank_mat import *
+import os
 
 class HMat:
     def __init__(self, n, m):
@@ -11,7 +12,14 @@ class HMat:
         low_rank = CompressMatrixID_2(mat, k, start_i, start_j)
         self.subMat.append(low_rank)
 
-    def MatVec(self, x):
+    def MatVec(self, x, hmat_file, vec_file, result_file):
+        Output_Hmat(self, hmat_file)
+        print("Wrote to " + hmat_file)
+        Output_Vec(x, vec_file)
+        print("Wrote to " + vec_file)
+        cmd = "./matvec " + hmat_file + " " + vec_file + " " + result_file
+        os.system(cmd)
+        '''
         result = np.zeros(x.shape[0], dtype=np.float64)
         for low_rank in self.subMat:
             for i in xrange(0, low_rank.n):
@@ -20,6 +28,7 @@ class HMat:
                     for k in xrange(0, low_rank.k):
                         result[x_index] = result[x_index] + low_rank.Y[i, k] * low_rank.Z[k, j] * x[x_index]
         return result
+        '''
 
     def GetSubMat(self):
         return self.subMat
@@ -61,7 +70,7 @@ def Output_Vec(x, filename):
 
     m = str(x.shape[0]) + "\n"
     output.write(m)
-    for i in range(0, m):
+    for i in range(0, x.shape[0]):
         ele = str(x[i]) + "\n"
         output.write(ele)
     output.close()

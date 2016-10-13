@@ -59,6 +59,9 @@ m = int(3000)
 data = ReadBinary(mat_file, n * m)
 x = np.random.rand(m)
 outdata = "initial_test.dat"
+hmat_file = "HMat.dat"
+vec_file = "vec.dat"
+result_file = "result.dat"
 mat = Restructure(data)
 
 min_rank = 16#500
@@ -104,7 +107,7 @@ for n in nm:
     print("Sub Matrices: " + str(len(sub_matrices)))
 
     r1 = np.dot(mat, x)
-    r2 = Hmat.MatVec(x)
+    r2 = Hmat.MatVec(x, hmat_file, vec_file, result_file)
     rel_err = FrobDiff(r1, r2)
     print(rel_err)
 '''
