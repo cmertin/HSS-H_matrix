@@ -7,7 +7,7 @@ using namespace std;
 
 struct SubMatrix
 {
-  vector<unsigned int> info; // start_i, n, k, m
+  vector<unsigned int> info; // start_i, start_j, n, k, m
   vector<double> Y; // Uk * Sk
   vector<double> Z; // Vk^T
 };
@@ -80,16 +80,16 @@ void ReadHMat(string &filename, vector<SubMatrix> &HMat)
       size_t pos = 0;
       string substr;
       // Reads in the info for the sub matrix
-      // start_i, n, k, m
-      for(int i = 0; i < 4; ++i)
+      // start_i, start_j, n, k, m
+      for(int i = 0; i < 5; ++i)
 	{
 	  getline(file, line);
 	  A.info.push_back(stoi(line));
 	}
       // Reads in Yk
-      for(int y = 0; y < A.info[1]; ++y)
+      for(int y = 0; y < A.info[2]; ++y)
 	     {
-	       for(int k = 0; k < A.info[2]; ++k)
+	       for(int k = 0; k < A.info[3]; ++k)
 		 {
 		   getline(file, line);
 		   double val = stod(line);
@@ -97,9 +97,9 @@ void ReadHMat(string &filename, vector<SubMatrix> &HMat)
 		 }
 	      }
       // Reads in Zk
-      for(int z = 0; z < A.info[3]; ++z)
+      for(int z = 0; z < A.info[4]; ++z)
 	     {
-	       for(int k = 0; k < A.info[2]; ++k)
+	       for(int k = 0; k < A.info[3]; ++k)
 		 {
 		   getline(file, line);
 		   double val = stod(line);
@@ -133,22 +133,25 @@ void MatVec(vector<SubMatrix> &HMat, vector<double> &vec, vector<double> &result
   for(int submat = 0; submat < HMat.size(); ++submat)
     {
       unsigned int start_i = HMat[submat].info[0];
-      unsigned int n = HMat[submat].info[1];
-      unsigned int k = HMat[submat].info[2];
-      unsigned int m = HMat[submat].info[3];
+      unsigned int start_j = HMat[submat].info[1];
+      unsigned int n = HMat[submat].info[2];
+      unsigned int k = HMat[submat].info[3];
+      unsigned int m = HMat[submat].info[4];
       for(int i = 0; i < n; ++i)
-	     {
-	        unsigned int x_index = start_i + i;
-	        for(int j = 0; j < m; ++j)
-	         {
-	            for(int k_ = 0; k_ < k; ++k_)
-		            {
-		              unsigned int y_index = i * k + k_;
-		              unsigned int z_index = j * k + k_;
-		              result[x_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
-		            }
-	        }
+	{
+	  unsigned int res_index = start_i + i;
+	  for(int j = 0; j < m; ++j)
+	    {
+	      unsigned int x_index = start_j + j;
+	      for(int k_ = 0; k_ < k; ++k_)
+		{
+		  unsigned int y_index = i * k + k_;
+		  unsigned int z_index = j * k + k_;
+		  //cout << z_index << '\t' << y_index << endl;
+		  result[res_index] += HMat[submat].Y[y_index] * HMat[submat].Z[z_index] * vec[x_index];
+		}
 	    }
+	}
     }
   return;
 }

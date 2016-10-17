@@ -9,8 +9,8 @@ class HMat:
         self.subMat = []
 
     def add_lowrank(self, mat, k, start_i = 0, start_j = 0):
-        low_rank = CompressMatrixID_2(mat, k, start_i, start_j)
-        #low_rank = CompressMatrix(mat, k, start_i, start_j)
+        #low_rank = CompressMatrixID_2(mat, k, start_i, start_j)
+        low_rank = CompressMatrix(mat, k, start_i, start_j)
         self.subMat.append(low_rank)
 
     def MatVec(self, x, hmat_file, vec_file, result_file):
@@ -50,7 +50,8 @@ def Output_Hmat(Hmat, filename):
         k = sub_mat.k
         m = sub_mat.d
         start_i = sub_mat.start_i
-        line = str(start_i) + "\n" + str(n) + "\n" + str(k) + "\n" + str(m) + "\n"
+        start_j = sub_mat.start_j
+        line = str(start_i) + "\n" + str(start_j) + "\n" + str(n) + "\n" + str(k) + "\n" + str(m) + "\n"
         output.write(line)
         #print(sub_mat.Y.shape, sub_mat.Z.shape)
         for i in range(0, n):
