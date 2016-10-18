@@ -36,24 +36,26 @@ int main(int argc, char *argv[])
 
   if(FileExists(HMat_file) == false)
     {
-      cout << "ERROR: File \"" + HMat_file + "\" does not exist. Exiting..." << endl;
+      cout << "ERROR: File \"" + HMat_file + "\" does not exist. Exiting..." 
+	   << endl;
       return -1;
     }
 
   if(FileExists(vec_file) == false)
     {
-      cout << "ERROR: File \"" + vec_file + "\" does not exist. Exiting..." << endl;
+      cout << "ERROR: File \"" + vec_file + "\" does not exist. Exiting..." 
+	   << endl;
       return -1;
     }
 
   ReadHMat(HMat_file, HMat);
-  cout << '\t' << "Finished reading " << HMat_file << endl;
+  //cout << '\t' << "Finished reading " << HMat_file << endl;
   ReadVec(vec_file, vec);
-  cout << '\t' << "Finished reading " << vec_file << endl;
+  //cout << '\t' << "Finished reading " << vec_file << endl;
   MatVec(HMat, vec, result);
-  cout << '\t' << "Finished MatVec " << endl;
+  //cout << '\t' << "Finished MatVec " << endl;
   OutputFile(out_file, result);
-  cout << '\t' << "Wrote result to " << out_file << endl;
+  //cout << '\t' << "Wrote result to " << out_file << endl;
 
   return 0;
 }

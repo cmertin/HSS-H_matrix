@@ -31,6 +31,18 @@ class HMat:
         lines = [np.float64(line.rstrip('\n')) for line in open(result_file)]
         result = np.asarray(lines)
         return result
+
+    def CallMatVec(self, x):
+        hmat_file = "HMat.dat"
+        vec_file = "vec.dat"
+        result_file = "result.dat"
+        Output_Hmat(self, hmat_file)
+        Output_Vec(x, vec_file)
+        cmd = "./matvec "  + hmat_file + " " + vec_file + " " + result_file
+        os.system(cmd)
+        lines = [np.float64(line.rstrip('\n')) for line in open(result_file)]
+        result = np.asarray(lines)
+        return result
         '''
         result = np.zeros(x.shape[0], dtype=np.float64)
         for low_rank in self.subMat:

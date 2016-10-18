@@ -1,6 +1,8 @@
 from mat import *
 from compress_mat import *
 import scipy.linalg.interpolative as sli
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import eigs
 
 def MatrixCheck(Hmat):
     mat = np.zeros((Hmat.n, Hmat.m))
@@ -129,5 +131,27 @@ print("Sub Matrices: " + str(len(sub_matrices)))
 r1 = np.dot(mat, x)
 r2 = Hmat.MatVec(x, hmat_file, vec_file, result_file)
 rel_err = FrobDiff(r1, r2)
-print(rel_err)
+print("Relative Matvec Error: " + str(rel_err))
+
+# Calculates the Eigenvalues and Eigenvectors of the full
+# matrix and the Hmatrix and compares them
+Hmat_linop = LinearOperator((n,m), matvec=Hmat.CallMatVec)
+
+eigs_full, eig_vec = eigs(mat, k=n)
+
+eigs_hmat, eig_vec = eigs(Hmat_linop, k=n)
+
+eigs_full_file = "eigs_full.dat"
+eigs_hmat_file = "eigs_hmat.dat"
+
+Output_Vec(eigs_full, eigs_full_file)
+Output_Vec(eigs_hmat, eigs_hmat_file)
+
+eigs_err = FrobDiff(eigs_full, eigs_hmat)
+print(eigs_full)
+print("\n\n\n\n")
+print(eigs_hmat)
+print("\n\n\n\n")
+print("Relative Eigenvalue Error: "  + str(eigs_err))
+
 print("DONE")
