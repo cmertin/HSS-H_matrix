@@ -47,7 +47,7 @@ def LowRank_Recurse(mat, Hmat, splits, tol, min_rank):
         local_rank = Rank(s)
         if local_rank <= min_rank:
             #print(split)
-            Hmat.add_lowrank(sub_matrix, local_rank, start_i, start_j)
+            Hmat.add_lowrank(sub_matrix, local_rank, start_i, start_j, True)
             continue
 
         low_rank, new_rank = LowRankMat(U, s, V, tol)
@@ -115,7 +115,10 @@ for sub_matrix in sub_matrices:
     m1 = sub_matrix.d
     k1 = sub_matrix.k
     num_elements = num_elements + n1 * m1
-    num_k = num_k + 2 * n1 * k1
+    if n1 == k1 and m1 == k1:
+        num_k = num_k + n1 * m1
+    else:
+        num_k = num_k + 2 * n1 * k1
 
 print(num_elements, num_k)
 

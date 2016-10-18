@@ -8,9 +8,16 @@ class HMat:
         self.m = m # Columns
         self.subMat = []
 
-    def add_lowrank(self, mat, k, start_i = 0, start_j = 0):
+    def add_lowrank(self, mat, k, start_i = 0, start_j = 0, minRank = False):
         #low_rank = CompressMatrixID_2(mat, k, start_i, start_j)
-        low_rank = CompressMatrix(mat, k, start_i, start_j)
+        if(minRank == False):
+            low_rank = CompressMatrix(mat, k, start_i, start_j)
+        else:
+            n = mat.shape[0]
+            m = mat.shape[1]
+            k = m
+            Z = np.identity(m)
+            low_rank = LowRankMatrix(start_i, start_j, n, k, m, mat, Z)
         self.subMat.append(low_rank)
 
     def MatVec(self, x, hmat_file, vec_file, result_file):
