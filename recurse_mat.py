@@ -16,16 +16,17 @@ def MatrixCheck(Hmat):
             for j in range(0, m):
                 row = start_i + i
                 col = start_j + j
+                #print(row, col)
                 mat[row,col] = 1
-    nnz = Rank(mat)
+    nnz = NNZ(mat)
     print(mat)
     print(count, nnz)
 
 def MatrixSplit(n, m, start_i = 0, start_j = 0):
     n2_a = int(floor(n/2)) + (n % 2)
-    n2_b = int(floor(n/2)) - (n % 2)
+    n2_b = int(floor(n/2))# - (n % 2)
     m2_a = int(floor(m/2)) + (m % 2)
-    m2_b = int(floor(m/2)) - (m % 2)
+    m2_b = int(floor(m/2))# - (m % 2)
     mat_a1 = [n2_a, m2_a, start_i, start_j]
     mat_a2 = [n2_a, m2_b, start_i, start_j + m2_a]
     mat_b1 = [n2_b, m2_a, start_i + n2_a, start_j]
@@ -45,7 +46,7 @@ def LowRank_Recurse(mat, Hmat, splits, tol, min_rank):
         U, s, V = np.linalg.svd(sub_matrix, full_matrices = False)
         local_rank = Rank(s)
         if local_rank <= min_rank:
-            print(split)
+            #print(split)
             Hmat.add_lowrank(sub_matrix, local_rank, start_i, start_j)
             continue
 
@@ -56,7 +57,7 @@ def LowRank_Recurse(mat, Hmat, splits, tol, min_rank):
 
         if new_rank < min(n/2, m/2):#(max_rank/(2**level)):
             Hmat.add_lowrank(sub_matrix, new_rank, start_i, start_j)
-            print('\t', split, new_rank)
+            #print('\t', split, new_rank)
             continue
         else:
             local_rank = new_rank
@@ -86,7 +87,7 @@ vec_file = "vec.dat"
 result_file = "result.dat"
 mat = Restructure(data)
 
-min_rank = 100#500#16
+min_rank = 16#500#16
 min_tol = 0.8
 tol_diff = 0.01
 max_tol = 1.0 + tol_diff
@@ -97,7 +98,7 @@ print("Built Matrix")
 U, s, V = np.linalg.svd(mat, full_matrices = True)
 print("Rank = " + str(Rank(s)))
 
-tol = .98
+tol = .999
 print("Tolerance = " + str(tol))
 D = mat.copy()
 splits = MatrixSplit(n, m)
@@ -118,7 +119,7 @@ for sub_matrix in sub_matrices:
 
 print(num_elements, num_k)
 
-MatrixCheck(Hmat)
+#MatrixCheck(Hmat)
 
 print("Sub Matrices: " + str(len(sub_matrices)))
 
