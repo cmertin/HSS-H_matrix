@@ -98,7 +98,7 @@ print("Built Matrix")
 U, s, V = np.linalg.svd(mat, full_matrices = True)
 print("Rank = " + str(Rank(s)))
 
-tol = .999
+tol = .99
 print("Tolerance = " + str(tol))
 D = mat.copy()
 splits = MatrixSplit(n, m)

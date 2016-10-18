@@ -97,9 +97,9 @@ void ReadHMat(string &filename, vector<SubMatrix> &HMat)
 		 }
 	      }
       // Reads in Zk
-      for(int z = 0; z < A.info[4]; ++z)
+      for(int k = 0; k < A.info[3]; ++k)
 	     {
-	       for(int k = 0; k < A.info[3]; ++k)
+	       for(int z = 0; z < A.info[4]; ++z)
 		 {
 		   getline(file, line);
 		   double val = stod(line);

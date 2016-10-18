@@ -66,9 +66,9 @@ def Output_Hmat(Hmat, filename):
             for j in range(0, k):
                 line = line + str(sub_mat.Y[i][j]) + "\n"
             output.write(line)
-        for i in range(0, k):
+        for j in range(0, m):
             line = ""
-            for j in range(0, m):
+            for i in range(0, k):
                 line = line + str(sub_mat.Z[i][j]) + "\n"
             output.write(line)
     output.close()
