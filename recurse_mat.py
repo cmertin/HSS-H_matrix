@@ -137,9 +137,9 @@ print("Relative Matvec Error: " + str(rel_err))
 # matrix and the Hmatrix and compares them
 Hmat_linop = LinearOperator((n,m), matvec=Hmat.CallMatVec)
 
-eigs_full, eig_vec = eigs(mat, k=n)
+eigs_full, eig_vec = eigs(mat, k=(n-2))
 
-eigs_hmat, eig_vec = eigs(Hmat_linop, k=n)
+eigs_hmat, eig_vec = eigs(Hmat_linop, k=(n-2))
 
 eigs_full_file = "eigs_full.dat"
 eigs_hmat_file = "eigs_hmat.dat"
