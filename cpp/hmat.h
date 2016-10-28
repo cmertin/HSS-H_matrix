@@ -5,8 +5,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
-#include <cblas.h>
-#include <lapacke.h>
+#include "cblas.h"
+#include "lapacke.h"
+
+
 
 struct Split
 {
