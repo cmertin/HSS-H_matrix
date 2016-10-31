@@ -25,6 +25,7 @@ $RECYCLE.BIN/
 # Other
 *.ipynb
 matvec
+hmat
 
 # =========================
 # Operating System Files

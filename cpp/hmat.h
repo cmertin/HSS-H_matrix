@@ -8,8 +8,6 @@
 #include "cblas.h"
 #include "lapacke.h"
 
-
-
 struct Split
 {
   unsigned int n;
@@ -215,6 +213,11 @@ void MatVec(HMat &A, double x[], double result[], unsigned int &rows)
 	    }
 	}
     }
+  return;
+}
+
+void BuildHMat(double mat[], HMat &A, const unsigned int &n, const unsigned int &m, std::vector<Split> &splits, const double &tol, const unsigned int &min_rank)
+{
   return;
 }
 
