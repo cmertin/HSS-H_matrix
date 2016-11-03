@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "hmat.h"
 
 using namespace std;
@@ -12,8 +13,13 @@ int main()
   unsigned int n = 1000;
   unsigned int nm = 3 * n * n;
   double *mat = new double[nm];
-  
+  double tol = 0.95;
+  unsigned int min_rank = 16;
+  vector<Split> fullSplit = MatrixSplit(3 * n, 3 * n);
   ReadMatrix(mat, matFile, nm);
+
+  
+
   return 0;
 }
 
@@ -26,7 +32,7 @@ void ReadMatrix(double mat[], string &filename, unsigned int &n)
   for(int i = 0; i < n; ++i)
     {
       file.read((char*)&temp, sizeof(double));
-      cout << temp << endl;
+      mat[i] = temp;
     }
   return;
 }

@@ -5,31 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
+#include "objects.h"
 #include "cblas.h"
 #include "lapacke.h"
-
-struct Split
-{
-  unsigned int n;
-  unsigned int m;
-  unsigned int i;
-  unsigned int j;
-  unsigned int k;
-};
-
-struct SubMatrix
-{
-  Split info; // start_i, start_j, n, k, m
-  std::vector<double> Y; // Uk * Sk
-  std::vector<double> Z; // Vk^T
-}temp;
-
-struct HMat
-{
-  std::vector<SubMatrix> submatrices;
-  unsigned int n;
-  unsigned int m;
-};
 
 std::vector<Split> MatrixSplit(unsigned int n, unsigned int m, unsigned int i = 0, unsigned int j = 0)
 {
@@ -67,132 +45,46 @@ std::vector<Split> MatrixSplit(unsigned int n, unsigned int m, unsigned int i = 
   return splits;
 }
 
-double *SubMatrix(double mat[], unsigned int &n, unsigned int &m, Split &sp)
+template <typename T>
+class HMat
 {
-  double *subMat = new double[sp.n * sp.m];
-  for(unsigned int i = 0; i < sp.n; ++i)
+ public:
+  HMat(T mat[], std::vector<Split> &splits, double &tol, unsigned int &min_rank, unsigned int &n, unsigned int &m);
+  void MatVec(T x[], T result[], unsigned int &rows);
+  unsigned int NumSubMat();
+
+ private:
+  unsigned int n; // rows
+  unsigned int m; // columns
+  std::vector<SubMatrix<T> > subMatrices;
+};
+
+template <typename T>
+HMat<T>::HMat(T mat[], std::vector<Split> &splits, double &tol, unsigned int &min_rank, unsigned int &n, unsigned int &m)
+{
+  for(int i = 0; i < splits.size(); ++i)
     {
-      for(unsigned int j = 0; j < sp.m; ++j)
-	{
-	  subMat[i * sp.n + j] = mat[(i + sp.i) * n + (j + sp.j)];
-	}
+      SubMatrix<T> subMat(mat, n, m, splits[i], tol, min_rank);
     }
-
-  return subMat;
 }
 
-unsigned int NNZ_Vec(double vec[], unsigned int &n)
+template<typename T>
+unsigned int HMat<T>::NumSubMat()
 {
-  unsigned int count = 0;
-  for(int i = 0; i < n; ++i)
-    {
-      if(vec[i] > 0)
-	++count;
-    }
-  return count;
+  return this->subMatrices.size();
 }
 
-double VecNorm(double vec[], unsigned int &n)
+/*
+void MatVec(double x[], double result[], unsigned int &rows)
 {
-  double norm = 0;
-  for(int i = 0; i < n; ++i)
-    norm += vec[i] * vec[i];
-
-  return std::sqrt(norm);
-}
-
-// s = vector of eigenvalues
-// n = size of the vector
-// k = "new rank"
-// tol = tolerance
-void EigTol(double s[], unsigned int &n, unsigned int &k, double &tol)
-{
-  unsigned int index = n-1;
-  double norm1 = VecNorm(s, n);
-  double norm2 = norm1;
-  while(norm2 > tol * norm1)
-    {
-      s[index] = 0.0;
-      norm2 = VecNorm(s, index);
-      index = index - 1;
-    }
-  k = index;
-  return;
-}
-
-// n = rows
-// m = columns
-// k = new/low rank after SVD truncation
-// mat = matrix to take SVD of
-// Yk = Uk * Sk
-// Zk = Vk^T
-// tol = tolerance
-// http://www.netlib.org/lapack/explore-html/d1/d7e/group__double_g_esing_ga6a6ce95c3fd616a7091df45287c75cfa.html#ga6a6ce95c3fd616a7091df45287c75cfa
-unsigned int SVD(double mat[], double Yk[], double Zk[], unsigned int &n, unsigned int &m, unsigned int &k, double &tol)
-{
-unsigned int min_nm = std::min(n,m);
-  double *U = new double[n * n];
-  double *S = new double[n * m];
-  double *s = new double[min_nm];
-  double *Vt = new double[m * m];
-  unsigned int rank = 0;
-  int n_s = (int)n;
-  int m_s = (int)m;
-  lapack_int * n_ = &n_s;
-  lapack_int * m_ = &m_s;
-  char jobChar = 'A';
-  char *job = &jobChar;
-  int info = 0;
-  int lWork = -1;
-  lapack_int *info_ = &info;
-  lapack_int *lWork_ = &lWork;
-  double *work = new double[1];
-  double alpha = 1.0;
-  double beta = 0.0;
-
-  LAPACK_dgesvd(job, job, n_, m_, mat, n_, s, U, n_, Vt, m_, work, lWork_, info_);
-
-  rank = NNZ_Vec(s, min_nm);
-
-  EigTol(s, min_nm, k, tol);
-
-  // Creates s into diagonal matrix (S)
-  for(int i = 0; i < k; ++i)
-    S[i * n + i] = s[i];
-
-  double *Y = new double[n * k];
-  double *Z = new double[k * m];
-
-  for(int i = 0; i < k; ++i)
-    {
-      for(int j = 0; j < m; ++j)
-	Z[i * m + j] = Vt[i * m + j];
-    }
-
-  // Y = Uk * Sk
-  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, n, k, k, alpha, U, n, S, k, beta, Y, n);
-
-  Yk = Y;
-  Zk = Z;
-
-  delete U;
-  delete S;
-  delete s;
-  delete Vt;
-
-  return rank;
-}
-
-void MatVec(HMat &A, double x[], double result[], unsigned int &rows)
-{
-  assert(A.m == rows);
+  assert(this->m == rows);
 
   for(int i = 0; i < rows; ++i)
     result[i] = 0.0;
 
-  for(int submat = 0; submat < A.submatrices.size(); ++submat)
+  for(int submat = 0; submat < NumSubMat(); ++submat)
     {
-      temp = A.submatrices[submat];
+      temp = this->subMatrices[submat];
       unsigned int start_i = temp.info.i;
       unsigned int start_j = temp.info.j;
       unsigned int n = temp.info.n;
@@ -215,10 +107,6 @@ void MatVec(HMat &A, double x[], double result[], unsigned int &rows)
     }
   return;
 }
-
-void BuildHMat(double mat[], HMat &A, const unsigned int &n, const unsigned int &m, std::vector<Split> &splits, const double &tol, const unsigned int &min_rank)
-{
-  return;
-}
+*/
 
 #endif

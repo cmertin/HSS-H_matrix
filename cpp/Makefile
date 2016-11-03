@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = --std=c++0x -O3
 LAPAK = -L/usr/lib -llapack -lcblas
 
-hmat: main.cpp hmat.h
+hmat: main.cpp hmat.h objects.h
 	$(CC) $(CFLAGS) -o hmat main.cpp $(LAPAK) 
 
 clean:
