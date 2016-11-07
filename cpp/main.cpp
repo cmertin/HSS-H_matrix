@@ -11,14 +11,16 @@ int main()
 {
   string matFile = "mob_H.bin";
   unsigned int n = 1000;
+  unsigned int n_ = 3 * n;
   unsigned int nm = 3 * n * n;
   double *mat = new double[nm];
   double tol = 0.95;
   unsigned int min_rank = 16;
-  vector<Split> fullSplit = MatrixSplit(3 * n, 3 * n);
+  vector<Split> fullSplit = MatrixSplit(n_, n_);
   ReadMatrix(mat, matFile, nm);
 
-  
+  HMat<double> hmat(n_, n_);
+  BuildHMat(mat, hmat, fullSplit, tol, min_rank);
 
   return 0;
 }

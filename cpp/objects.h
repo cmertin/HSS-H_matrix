@@ -23,7 +23,10 @@ T *MatrixSubset(T mat[], unsigned int &n, unsigned int &m, Split &sp)
   for(unsigned int i = 0; i < sp.n; ++i)
     {
       for(unsigned int j = 0; j < sp.m; ++j)
-	subMat[i * sp.n + j] = mat[(i + sp.i) * n + (j + sp.j)];
+	{
+	  //std::cout << i << '\t' << j << std::endl;
+	  subMat[i * sp.n + j] = mat[(i + sp.i) * n + (j + sp.j)];
+	}
     }
   return subMat;
 }
@@ -59,7 +62,7 @@ unsigned int NNZ_Vec(T vec[], unsigned int &n)
 // Calculates the norm of a vector and removes
 // elemenents until it's within a given tolerance * originalNorm
 template <typename T>
-void NormTol(double s[], unsigned int &n, unsigned int &k, double &tol)
+void NormTol(T s[], unsigned int &n, unsigned int &k, double &tol)
 {
   unsigned int index = n-1;
   double origNorm = VecNorm(s, n);
@@ -80,11 +83,17 @@ class SubMatrix
  public:
   SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, double &tol, unsigned int &min_rank);
   ~SubMatrix();
+  unsigned int GetRank();
+  unsigned int GetRows();
+  unsigned int GetCols();
+  unsigned int GetRowIndex();
+  unsigned int GetColIndex();
+  Split GetInfo();
     
  private:
   Split info;
-  T Yk[]; // Uk * Sk
-  T Zk[]; // Vk^T
+  T *Yk; // Uk * Sk
+  T *Zk; // Vk^T
 };
 
 template <typename T>
@@ -92,6 +101,7 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
 {
   T *subMat = MatrixSubset(mat, n, m, sp);
   unsigned int min_nm = std::min(sp.n,sp.m);
+  int min_nm_ = (int)min_nm;
   T *U = new T[sp.n * sp.n];
   T *s = new T[min_nm];
   T *Vt = new T[sp.m * sp.m];
@@ -99,7 +109,7 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
   int n_s = (int)sp.n;
   int m_s = (int)sp.m;
   lapack_int * n_ = &n_s;
-  lapack_int * m_ = &m_s;
+  lapack_int * m_ = &min_nm_;//&m_s;
   char jobChar = 'A';
   char *job = &jobChar;
   int info = 0;
@@ -110,8 +120,11 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
   double alpha = 1.0;
   double beta = 0.0;
 
-  LAPACK_dgesvd(job, job, n_, m_, mat, n_, s, U, n_, Vt, m_, work, lWork_, info_);
+  std::cout << subMat[2] << std::endl;
 
+  LAPACK_dgesvd(job, job, n_, m_, subMat, n_, s, U, n_, Vt, m_, work, lWork_, info_);
+
+  std::cout << "min: " << min_nm << std::endl;
   rank = NNZ_Vec(s, min_nm);
 
   if(rank <= min_rank)
@@ -122,6 +135,7 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
       this->info.j = sp.j;
       this->info.k = rank;
 
+      // Possible bug: http://stackoverflow.com/questions/751878/determine-array-size-in-constructor-initializer
       this->Yk = new T[sp.n * sp.m];
       
       for(unsigned int i = 0; i < sp.n; ++i)
@@ -136,14 +150,15 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
       for(unsigned int i = 0; i < sp.m; ++i)
 	this->Zk[i * sp.m + i] = 1.0;
 
-      delete subMat;
-      delete U;
-      delete Vt;
-      delete s;
-      delete work; 
+      delete [] subMat;
+      delete [] U;
+      delete [] Vt;
+      delete [] s;
+      delete [] work; 
     }
   else
     {
+     
       NormTol(s, min_nm, rank, tol);
 
       // Creates s into diagonal matrix (S)
@@ -151,6 +166,8 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
       std::fill_n(S, rank * rank, 0);
       for(int i = 0; i < rank; ++i)
 	S[i * rank + i] = s[i];
+
+      std::cout << s[0] << '\t' << S[0] << std::endl;
       
       this->Yk = new T[sp.n * rank];
       this->Zk = new T[rank * sp.m];
@@ -169,22 +186,65 @@ SubMatrix<T>::SubMatrix(T mat[], unsigned int &n, unsigned int &m, Split &sp, do
       this->info.i = sp.i;
       this->info.j = sp.j;
       this->info.k = rank;
-      
-      delete U;
-      delete Vt;
-      delete S;
-      delete s;
-      delete work;
+
+      delete [] subMat;
+      delete [] U;
+      delete [] Vt;
+      delete [] S;
+      delete [] s;
+      //delete [] work;
+      std::cout << "Do you believe in magic?" << std::endl;
+
     }
 }
 
 template <typename T>
 SubMatrix<T>::~SubMatrix()
 {
-  delete this->Yk;
-  delete this->Zk;
+  delete [] this->Yk;
+  delete [] this->Zk;
+  /*
+  free(this->Yk);
+  free(this->Zk);
+  this->Yk = NULL;
+  this->Zk = NULL;
+  */
 }
 
+template <typename T>
+unsigned int SubMatrix<T>::GetRank()
+{
+  return this->info.k;
+}
 
+template <typename T>
+unsigned int SubMatrix<T>::GetRows()
+{
+  return this->info.n;
+}
+
+template <typename T>
+unsigned int SubMatrix<T>::GetCols()
+{
+  return this->info.m;
+}
+
+template <typename T>
+unsigned int SubMatrix<T>::GetRowIndex()
+{
+  return this->info.i;
+}
+
+template <typename T>
+unsigned int SubMatrix<T>::GetColIndex()
+{
+  return this->info.j;
+}
+
+template <typename T>
+Split SubMatrix<T>::GetInfo()
+{
+  return this->info;
+}
 
 #endif
