@@ -1,9 +1,12 @@
-CC = g++
-CFLAGS = --std=c++0x -O3 -g
+BCC = g++
+CFLAGS = -std=c++0x -O3
 LAPAK = -L/usr/lib -llapack -lcblas
+ICC = icpc
+IFLAGS = -mkl -qopenmp
+DBG = 
 
-hmat: main.cpp hmat.h objects.h
-	$(CC) $(CFLAGS) -o hmat main.cpp $(LAPAK) 
+hmat: main.cpp hmat.h objects.h ompUtils.h ompUtils.tcc
+	$(ICC) $(IFLAGS) $(DBG) -o hmat main.cpp
 
 clean:
-	rm -rf hmat *~ \#*
+	rm -rf hmat test *~ \#*
